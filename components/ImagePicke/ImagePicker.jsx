@@ -1,65 +1,118 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity, Text, Image } from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { Video } from "expo-av";
 
-const ImagePickerComponent = ({ setImageUri, setVideoUri }) => {
-  const pickMedia = async (type) => {
+const HomeScreen = () => {
+  const [imageSrc, setImageSrc] = useState(null);
+  const [videoSrc, setVideoSrc] = useState(null);
+
+  const pickImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
+
     if (!permissionResult.granted) {
       alert("Permission to access media library is required!");
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes:
-        type === "video"
-          ? ImagePicker.MediaTypeOptions.Videos
-          : ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
     if (!result.canceled) {
-      if (type === "image") setImageUri(result.uri);
-      else setVideoUri(result.uri);
+      setImageSrc(result.assets[0].uri);
+    }
+  };
+
+  const pickVideo = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      alert("Permission to access media library is required!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setVideoSrc(result.assets[0].uri);
     }
   };
 
   return (
-    <View className="gap-4 items-center">
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+      }}
+    >
       <TouchableOpacity
         style={{
-          flexDirection: "row",
-          alignItems: "center",
           backgroundColor: "#007AFF",
           padding: 10,
-          borderRadius: 5,
-          marginBottom: 10,
+          borderRadius: 8,
+          marginBottom: 20,
         }}
-        onPress={() => pickMedia("image")}
+        onPress={pickImage}
       >
-        <Ionicons name="image" size={20} color="#000" />
-        <Text style={{ color: "white", marginLeft: 8 }}>Pick an Image</Text>
+        <Text style={{ color: "white", fontSize: 16 }}>Pick an Image</Text>
       </TouchableOpacity>
+
+      {imageSrc ? (
+        <Image
+          source={{ uri: imageSrc }}
+          style={{
+            width: 330,
+            height: 250,
+            borderRadius: 8,
+            resizeMode: "contain",
+          }}
+        />
+      ) : (
+        <Text>No image loaded yet</Text>
+      )}
 
       <TouchableOpacity
         style={{
-          flexDirection: "row",
-          alignItems: "center",
           backgroundColor: "#007AFF",
           padding: 10,
-          borderRadius: 5,
+          borderRadius: 8,
+          marginTop: 20,
         }}
-        onPress={() => pickMedia("video")}
+        onPress={pickVideo}
       >
-        <Ionicons name="videocam" size={20} color="white" />
-        <Text style={{ color: "white", marginLeft: 8 }}>Pick a Video</Text>
+        <Text style={{ color: "white", fontSize: 16 }}>Pick a Video</Text>
       </TouchableOpacity>
+
+      {videoSrc ? (
+        <Video
+          source={{ uri: videoSrc }}
+          style={{
+            width: 330,
+            height: 250,
+            borderRadius: 8,
+            marginTop: 20,
+          }}
+          useNativeControls
+          resizeMode="contain"
+          isLooping
+        />
+      ) : (
+        <Text>No video loaded yet</Text>
+      )}
     </View>
   );
 };
 
-export default ImagePickerComponent;
+export default HomeScreen;
